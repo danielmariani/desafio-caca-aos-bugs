@@ -1,5 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using System.Collections.Generic;
+using System.Net.Http.Json;
 using Dima.Core.Handlers;
+using Dima.Core.Models;
 using Dima.Core.Requests.Stripe;
 using Dima.Core.Responses;
 using Dima.Core.Responses.Stripe;
@@ -13,15 +15,15 @@ public class StripeHandler(IHttpClientFactory httpClientFactory) : IStripeHandle
     public async Task<Response<string?>> CreateSessionAsync(CreateSessionRequest request)
     {
         var result = await _client.PostAsJsonAsync($"v1/payments/stripe/session", request);
-        return await result.Content.ReadFromJsonAsync<Response<string?>>()
+        return await Response<string?>.FromHttpResponse(result)
                ?? new Response<string?>(null, 400, "Falha ao criar sessão no Stripe");
     }
 
-    public async Task<Response<List<StripeTransactionResponse>>> GetTransactionsByOrderNumberAsync(
+    public async Task<Response<List<StripeTransactionResponse>?>> GetTransactionsByOrderNumberAsync(
         GetTransactionByOrderNumberRequest request)
     {
         var result = await _client.PostAsJsonAsync($"v1/payments/stripe/{request.Number}/transactions", request);
-        return await result.Content.ReadFromJsonAsync<Response<List<StripeTransactionResponse>>>()
-               ?? new Response<List<StripeTransactionResponse>>(null, 400, "Falha ao obter transações do pedido");
+        return await Response<List<StripeTransactionResponse>>.FromHttpResponse(result)
+               ?? new Response<List<StripeTransactionResponse>?>(null, 400, "Falha ao obter transações do pedido");
     }
 }

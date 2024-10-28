@@ -4,6 +4,7 @@ using Dima.Core.Models;
 using Dima.Core.Requests.Categories;
 using Dima.Core.Responses;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Dima.Api.Handlers;
 
@@ -13,6 +14,14 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
     {
         try
         {
+            // Fast fail validation
+            var existsInDb = await context.Categories
+                .AsNoTracking()
+                .AnyAsync(c => c.Title == request.Title);
+            if (existsInDb)
+                return new Response<Category?>(null, (int)HttpStatusCode.UnprocessableEntity, 
+                    $"A categoria '{request.Title}' já existe");
+
             var category = new Category
             {
                 UserId = request.UserId,

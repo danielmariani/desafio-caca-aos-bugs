@@ -54,7 +54,7 @@ public class StripeHandler : IStripeHandler
         return new Response<string?>(session.Id);
     }
 
-    public async Task<Response<List<StripeTransactionResponse>>> GetTransactionsByOrderNumberAsync(
+    public async Task<Response<List<StripeTransactionResponse>?>> GetTransactionsByOrderNumberAsync(
         GetTransactionByOrderNumberRequest request)
     {
         var options = new ChargeSearchOptions
@@ -64,8 +64,8 @@ public class StripeHandler : IStripeHandler
         var service = new ChargeService();
         var result = await service.SearchAsync(options);
 
-        if (result.Data.Count == 0)
-            return new Response<List<StripeTransactionResponse>>(null, 404, "Transação não encontrada");
+        if (result == null || result.Data.Count == 0)
+            return new Response<List<StripeTransactionResponse>?>(null, 404, "Transação não encontrada");
 
         var data = new List<StripeTransactionResponse>();
         foreach (var item in result.Data)
@@ -82,6 +82,6 @@ public class StripeHandler : IStripeHandler
             });
         }
 
-        return new Response<List<StripeTransactionResponse>>(data);
+        return new Response<List<StripeTransactionResponse>?>(data);
     }
 }

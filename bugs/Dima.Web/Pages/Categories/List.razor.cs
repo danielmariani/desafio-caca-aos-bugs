@@ -11,7 +11,7 @@ public partial class ListCategoriesPage : ComponentBase
     #region Properties
 
     public bool IsBusy { get; set; } = false;
-    public List<Category> Categories { get; set; }
+    public List<Category> Categories { get; set; } = new List<Category>();
     public string SearchTerm { get; set; } = string.Empty;
 
     #endregion
@@ -38,7 +38,7 @@ public partial class ListCategoriesPage : ComponentBase
         {
             var request = new GetAllCategoriesRequest();
             var result = await Handler.GetAllAsync(request);
-            if (result.IsSuccess)
+            if (result.IsSuccess && result.Data != null)
                 Categories.AddRange(result.Data);
         }
         catch (Exception ex)

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Dima.Core.Common.CustomAttributes;
 
 namespace Dima.Core.Requests.Account;
 
@@ -8,6 +9,6 @@ public class RegisterRequest : Request
     [EmailAddress(ErrorMessage = "E-mail inválido")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Senha Inválida")]
+    [DimaPassword]
     public string Password { get; set; } = string.Empty;
 }

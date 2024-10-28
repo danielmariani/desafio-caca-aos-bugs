@@ -5,7 +5,7 @@ using Dima.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddConfiguration();
-builder.AddSecurity();
+builder.AddSecurity();// m1nh0k@dima.com // Abc123* // Trusted_Connection=True
 builder.AddDataContexts();
 builder.AddCrossOrigin();
 builder.AddDocumentation();

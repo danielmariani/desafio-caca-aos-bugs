@@ -13,28 +13,28 @@ public class OrderHandler(IHttpClientFactory httpClientFactory) : IOrderHandler
     public async Task<Response<Order?>> CancelAsync(CancelOrderRequest request)
     {
         var result = await _client.PostAsJsonAsync($"v1/orders/{request.Id}/cancel", request);
-        return await result.Content.ReadFromJsonAsync<Response<Order?>>()
+        return await Response<Order?>.FromHttpResponse(result)
                ?? new Response<Order?>(null, 400, "Falha ao cancelar pedido");
     }
 
     public async Task<Response<Order?>> CreateAsync(CreateOrderRequest request)
     {
         var result = await _client.PostAsJsonAsync("v1/orders", request);
-        return await result.Content.ReadFromJsonAsync<Response<Order?>>()
+        return await Response<Order?>.FromHttpResponse(result)
                ?? new Response<Order?>(null, 400, "Falha ao criar a pedido");
     }
 
     public async Task<Response<Order?>> PayAsync(PayOrderRequest request)
     {
         var result = await _client.PostAsJsonAsync($"v1/orders/{request.OrderNumber}/pay", request);
-        return await result.Content.ReadFromJsonAsync<Response<Order?>>()
+        return await Response<Order?>.FromHttpResponse(result)
                ?? new Response<Order?>(null, 400, "Falha ao pagar pedido");
     }
 
     public async Task<Response<Order?>> RefundAsync(RefundOrderRequest request)
     {
         var result = await _client.PostAsJsonAsync($"v1/orders/{request.Id}/refund", request);
-        return await result.Content.ReadFromJsonAsync<Response<Order?>>()
+        return await Response<Order?>.FromHttpResponse(result)
                ?? new Response<Order?>(null, 400, "Falha ao pagar pedido");
     }
 
