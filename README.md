@@ -12,6 +12,8 @@ Depuração e solução de bugs, pensamento crítico e analítico, segurança e 
 
 ### 👻 Caçadores de Bugs
 * [Daniel Mariani](https://github.com/danielmariani/desafio-caca-aos-bugs)
+* Marlitos
+* Daniel Lima
 
 ## ⚙️ Tecnologias
 * C# 12
