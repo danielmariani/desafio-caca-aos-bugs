@@ -16,7 +16,7 @@ public class VerificationCode
     private VerificationCode(string code, DateTime expiresAtUtc)
     {
         Code = Guid.NewGuid().ToString("N")[..MinLength].ToUpper();
-        ExpiresAtUtc = DateTime.UtcNow.AddMinutes(5);
+        ExpiresAtUtc = expiresAtUtc;
     }
 
     #endregion
@@ -35,7 +35,9 @@ public class VerificationCode
     public string Code { get; }
     public DateTime? ExpiresAtUtc { get; private set; }
     public DateTime? VerifiedAtUtc { get; private set; }
-    public bool IsActive => VerifiedAtUtc != null && ExpiresAtUtc is null;
+    public bool IsActive => VerifiedAtUtc == null && !IsExpired;
+    public bool IsExpired => ExpiresAtUtc != null && ExpiresAtUtc < DateTime.UtcNow;
+    public bool IsVerified => !IsActive && !IsExpired;
 
     #endregion
 
@@ -52,9 +54,12 @@ public class VerificationCode
         if(code.Length != MinLength)
             throw new InvalidVerificationCodeException();
         
-        if(IsActive == false)
+        if(!IsActive)
             throw new InvalidVerificationCodeException();
-        
+
+        if (IsExpired)
+            throw new InvalidVerificationCodeException();
+
         VerifiedAtUtc = DateTime.UtcNow;
         ExpiresAtUtc = null;
     }

@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Balta.Domain.AccountContext.ValueObjects.Exceptions;
 using Balta.Domain.SharedContext.ValueObjects;
@@ -17,18 +19,22 @@ public record Password : ValueObject
 
     #region Constructors
 
-    private Password(string hash)
+    private Password(string hash,
+        DateTime? expiresAtUtc = null,
+        bool mustChange = false)
     {
         Hash = hash;
-        ExpiresAtUtc = null;
-        MustChange = false;
+        ExpiresAtUtc = expiresAtUtc;
+        MustChange = mustChange;
     }
 
     #endregion
 
     #region Factories
 
-    public static Password ShouldCreate(string plainText)
+    public static Password ShouldCreate(string plainText,
+        DateTime? expiresAtUtc = null,
+        bool mustChange = false)
     {
         if (string.IsNullOrEmpty(plainText))
             throw new InvalidPasswordException("Password cannot be null or empty");
@@ -42,9 +48,9 @@ public record Password : ValueObject
         if (plainText.Length > MaxLength)
             throw new InvalidPasswordException($"Password should have less than {MaxLength} characters");
 
-        var hash = ShouldHashPassword(plainText);
+        var hash = ShouldHashPassword(plainText, expiresAtUtc: expiresAtUtc, mustChange: mustChange);
         
-        return new Password(hash);
+        return new Password(hash, expiresAtUtc, mustChange);
     }
 
     #endregion
@@ -85,13 +91,27 @@ public record Password : ValueObject
     {
         password += Configuration.Api.PasswordSalt;
 
-        var parts = hash.Split(splitChar, 3);
-        if (parts.Length != 3)
+        var parts = hash.Split(splitChar, 5);
+        if (parts.Length != 5)
             return false;
 
         var hashIterations = Convert.ToInt32(parts[0]);
         var salt = Convert.FromBase64String(parts[1]);
         var key = Convert.FromBase64String(parts[2]);
+
+        if (parts[3] != String.Empty)
+        {
+            var expiration = Convert.ToDateTime(parts[3]);
+            if (expiration < DateTime.UtcNow)
+                return false;
+        }
+
+        if (parts[4] != String.Empty)
+        {
+            var mustChange = Convert.ToBoolean(parts[4]);
+            if (mustChange)
+                return false;
+        }
 
         if (hashIterations != iterations)
             return false;
@@ -106,6 +126,9 @@ public record Password : ValueObject
         return keyToCheck.SequenceEqual(key);
     }
 
+    public bool IsExpired() =>
+        ExpiresAtUtc != null && ExpiresAtUtc < DateTime.UtcNow;
+
     #endregion
 
     #region Private Methods
@@ -115,7 +138,9 @@ public record Password : ValueObject
         short saltSize = 16,
         short keySize = 32,
         int iterations = 10000,
-        char splitChar = '.')
+        char splitChar = '.',
+        DateTime? expiresAtUtc = null,
+        bool mustChange = false)
     {
         if (string.IsNullOrEmpty(password))
             throw new InvalidPasswordException("Password should not be null or empty");
@@ -130,7 +155,7 @@ public record Password : ValueObject
         var key = Convert.ToBase64String(algorithm.GetBytes(keySize));
         var salt = Convert.ToBase64String(algorithm.Salt);
 
-        return $"{iterations}{splitChar}{salt}{splitChar}{key}";
+        return $"{iterations}{splitChar}{salt}{splitChar}{key}{splitChar}{expiresAtUtc}{splitChar}{mustChange}";
     }
 
     #endregion

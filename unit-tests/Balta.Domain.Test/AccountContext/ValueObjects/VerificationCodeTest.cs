@@ -1,40 +1,148 @@
+using Balta.Domain.AccountContext.ValueObjects;
+using Balta.Domain.AccountContext.ValueObjects.Exceptions;
+using Balta.Domain.Test.Mocks;
+using System.Net;
+
 namespace Balta.Domain.Test.AccountContext.ValueObjects;
 
 public class VerificationCodeTest
 {
     [Fact]
-    public void ShouldGenerateVerificationCode() => Assert.Fail();
+    public void ShouldGenerateVerificationCode()
+    {
+        // Act
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+        
+        // Assert
+        Assert.NotNull(generated);
+    }
 
     [Fact]
-    public void ShouldGenerateExpiresAtInFuture() => Assert.Fail();
+    public void ShouldGenerateExpiresAtInFuture()
+    {
+        // Act
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+
+        // Assert
+        Assert.True(generated.ExpiresAtUtc > DateTime.UtcNow);
+    }
 
     [Fact]
-    public void ShouldGenerateVerifiedAtAsNull() => Assert.Fail();
+    public void ShouldGenerateVerifiedAtAsNull()
+    {
+        // Act
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+
+        // Assert
+        Assert.Null(generated.VerifiedAtUtc);
+    }
 
     [Fact]
-    public void ShouldBeInactiveWhenCreated() => Assert.Fail();
+    public void ShouldBeActiveWhenCreated()
+    {
+        // Act
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+
+        // Assert
+        Assert.True(generated.IsActive);
+    }
 
     [Fact]
-    public void ShouldFailIfExpired() => Assert.Fail();
+    public void ShouldFailIfExpired()
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockYesterdayDateTimeProvider());
+
+        // Act / Assert
+        Assert.Throws<InvalidVerificationCodeException>(() =>
+            generated.ShouldVerify(generated.Code));
+    }
 
     [Fact]
-    public void ShouldFailIfCodeIsInvalid() => Assert.Fail();
+    public void ShouldFailIfCodeIsInvalid()
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+
+        // Act / Assert
+        Assert.Throws<InvalidVerificationCodeException>(() =>
+            generated.ShouldVerify("outroCodigo"));
+    }
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("12")]
+    [InlineData("123")]
+    [InlineData("1234")]
+    [InlineData("12345")]
+    public void ShouldFailIfCodeIsLessThanSixChars(string code)
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+
+        // Act / Assert
+        Assert.Throws<InvalidVerificationCodeException>(() =>
+            generated.ShouldVerify(code));
+    }
+
+    [Theory]
+    [InlineData("1234567")]
+    [InlineData("12345678")]
+    [InlineData("123456789")]
+    public void ShouldFailIfCodeIsGreaterThanSixChars(string code)
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+
+        // Act / Assert
+        Assert.Throws<InvalidVerificationCodeException>(() =>
+            generated.ShouldVerify(code));
+    }
 
     [Fact]
-    public void ShouldFailIfCodeIsLessThanSixChars() => Assert.Fail();
+    public void ShouldFailIfIsNotActive()
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockYesterdayDateTimeProvider());
+
+        // Act / Assert
+        Assert.False(generated.IsActive);
+        Assert.Throws<InvalidVerificationCodeException>(() =>
+            generated.ShouldVerify(generated.Code));
+    }
 
     [Fact]
-    public void ShouldFailIfCodeIsGreaterThanSixChars() => Assert.Fail();
+    public void ShouldFailIfIsAlreadyVerified()
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+        generated.ShouldVerify(generated.Code);
+
+        // Act / Assert
+        Assert.Throws<InvalidVerificationCodeException>(() =>
+            generated.ShouldVerify(generated.Code));
+    }
 
     [Fact]
-    public void ShouldFailIfIsNotActive() => Assert.Fail();
+    public void ShouldFailIfIsVerificationCodeDoesNotMatch()
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
+
+        // Act / Assert
+        Assert.Throws<InvalidVerificationCodeException>(() =>
+            generated.ShouldVerify("outroCodigo"));
+    }
 
     [Fact]
-    public void ShouldFailIfIsAlreadyVerified() => Assert.Fail();
+    public void ShouldVerify()
+    {
+        // Arrange
+        var generated = VerificationCode.ShouldCreate(new MockDateTimeProvider());
 
-    [Fact]
-    public void ShouldFailIfIsVerificationCodeDoesNotMatch() => Assert.Fail();
-
-    [Fact]
-    public void ShouldVerify() => Assert.Fail();
+        // Act / Assert
+        generated.ShouldVerify(generated.Code);
+        
+        Assert.True(generated.IsVerified);
+    }
 }

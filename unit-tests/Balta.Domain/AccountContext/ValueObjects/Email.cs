@@ -60,6 +60,9 @@ public partial record Email : ValueObject
 
     public static implicit operator string(Email email)
         => email.ToString();
+    public static implicit operator Email(string address)
+        => ShouldCreate(address, new EmailDateTimeProvider());
+
 
     #endregion
 
@@ -74,5 +77,12 @@ public partial record Email : ValueObject
     [GeneratedRegex(Pattern)]
     private static partial Regex EmailRegex();
 
+    #endregion
+
+    #region InnerClass
+    private class EmailDateTimeProvider : IDateTimeProvider
+    {
+        public DateTime UtcNow => DateTime.UtcNow;
+    }
     #endregion
 }
