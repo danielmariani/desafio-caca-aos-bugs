@@ -5,6 +5,7 @@ using Dima.Core.Responses;
 using Dima.Core.Responses.Stripe;
 using Stripe;
 using Stripe.Checkout;
+using System.Net;
 
 namespace Dima.Api.Handlers;
 
@@ -65,7 +66,7 @@ public class StripeHandler : IStripeHandler
         var result = await service.SearchAsync(options);
 
         if (result == null || result.Data.Count == 0)
-            return new Response<List<StripeTransactionResponse>?>(null, 404, "Transação não encontrada");
+            return new Response<List<StripeTransactionResponse>?>(null, HttpStatusCode.NotFound, "Transação não encontrada");
 
         var data = new List<StripeTransactionResponse>();
         foreach (var item in result.Data)

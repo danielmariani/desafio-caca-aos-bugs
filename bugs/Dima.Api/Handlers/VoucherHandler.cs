@@ -4,6 +4,7 @@ using Dima.Core.Models;
 using Dima.Core.Requests.Orders;
 using Dima.Core.Responses;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Dima.Api.Handlers;
 
@@ -19,12 +20,12 @@ public class VoucherHandler(AppDbContext context) : IVoucherHandler
                 .FirstOrDefaultAsync(x => x.Number == request.Number && x.IsActive == true);
 
             return voucher is null
-                ? new Response<Voucher?>(null, 404, "Voucher não encontrado")
+                ? new Response<Voucher?>(null, HttpStatusCode.NotFound, "Voucher não encontrado")
                 : new Response<Voucher?>(voucher);
         }
         catch
         {
-            return new Response<Voucher?>(null, 500, "Não foi possível recuperar o voucher");
+            return new Response<Voucher?>(null, HttpStatusCode.InternalServerError, "Não foi possível recuperar o voucher");
         }
     }
 }

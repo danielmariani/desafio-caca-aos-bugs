@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Dima.Core.Common.Extensions;
 using Dima.Core.Handlers;
@@ -15,26 +16,26 @@ public class TransactionHandler(IHttpClientFactory httpClientFactory) : ITransac
     {
         var result = await _client.PostAsJsonAsync("v1/transactions", request);
         return await result.Content.ReadFromJsonAsync<Response<Transaction?>>()
-               ?? new Response<Transaction?>(null, 400, "Não foi possível criar sua transação");
+               ?? new Response<Transaction?>(null, HttpStatusCode.BadRequest, "Não foi possível criar sua transação");
     }
 
     public async Task<Response<Transaction?>> UpdateAsync(UpdateTransactionRequest request)
     {
         var result = await _client.PutAsJsonAsync($"v1/transactions/{request.Id}", request);
         return await result.Content.ReadFromJsonAsync<Response<Transaction?>>()
-               ?? new Response<Transaction?>(null, 400, "Não foi possível atualizar sua transação");
+               ?? new Response<Transaction?>(null, HttpStatusCode.BadRequest, "Não foi possível atualizar sua transação");
     }
 
     public async Task<Response<Transaction?>> DeleteAsync(DeleteTransactionRequest request)
     {
         var result = await _client.DeleteAsync($"v1/transactions/{request.Id}");
         return await result.Content.ReadFromJsonAsync<Response<Transaction?>>()
-               ?? new Response<Transaction?>(null, 400, "Não foi possível excluir sua transação");
+               ?? new Response<Transaction?>(null, HttpStatusCode.BadRequest, "Não foi possível excluir sua transação");
     }
 
     public async Task<Response<Transaction?>> GetByIdAsync(GetTransactionByIdRequest request)
         => await _client.GetFromJsonAsync<Response<Transaction?>>($"v1/transactions/{request.Id}")
-           ?? new Response<Transaction?>(null, 400, "Não foi possível obter a transação");
+           ?? new Response<Transaction?>(null, HttpStatusCode.BadRequest, "Não foi possível obter a transação");
 
     public async Task<PagedResponse<List<Transaction>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request)
     {
@@ -50,6 +51,7 @@ public class TransactionHandler(IHttpClientFactory httpClientFactory) : ITransac
         var url = $"v1/transactions?startDate={startDate}&endDate={endDate}";
 
         return await _client.GetFromJsonAsync<PagedResponse<List<Transaction>?>>(url)
-            ?? new PagedResponse<List<Transaction>?>(null, 400, "Não foi possível obter as transações");
+            ?? new PagedResponse<List<Transaction>?>(null, HttpStatusCode.BadRequest, 
+            "Não foi possível obter as transações");
     }
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Dima.Core.Handlers;
 using Dima.Core.Models;
@@ -12,9 +13,9 @@ public class ProductHandler(IHttpClientFactory httpClientFactory) : IProductHand
 
     public async Task<PagedResponse<List<Product>>> GetAllAsync(GetAllProductsRequest request)
         => await _client.GetFromJsonAsync<PagedResponse<List<Product>>>("v1/products")
-           ?? new PagedResponse<List<Product>>(null, 400, "Não foi possível obter os produtos");
+           ?? new PagedResponse<List<Product>>(null, HttpStatusCode.BadRequest, "Não foi possível obter os produtos");
 
     public async Task<Response<Product?>> GetBySlugAsync(GetProductBySlugRequest request)
         => await _client.GetFromJsonAsync<Response<Product?>>($"v1/products/{request.Slug}")
-           ?? new Response<Product?>(null, 400, "Não foi possível obter o produto");
+           ?? new Response<Product?>(null, HttpStatusCode.BadRequest, "Não foi possível obter o produto");
 }

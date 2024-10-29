@@ -6,6 +6,7 @@ using Dima.Core.Requests.Orders;
 using Dima.Core.Requests.Stripe;
 using Dima.Core.Responses;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Dima.Api.Handlers;
 
@@ -22,29 +23,29 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             if (order is null)
-                return new Response<Order?>(null, 404, "Pedido não encontrado");
+                return new Response<Order?>(null, HttpStatusCode.NotFound, "Pedido não encontrado");
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Falha ao obter pedido");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Falha ao obter pedido");
         }
 
         switch (order.Status)
         {
             case EOrderStatus.Canceled:
-                return new Response<Order?>(order, 400, "O pedido já foi cancelado!");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "O pedido já foi cancelado!");
 
             case EOrderStatus.Paid:
-                return new Response<Order?>(order, 400, "Um pedido pago não pode ser cancelado!");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "Um pedido pago não pode ser cancelado!");
 
             case EOrderStatus.Refunded:
-                return new Response<Order?>(order, 400, "Um pedido reembolsado não pode ser cancelado");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "Um pedido reembolsado não pode ser cancelado");
 
             case EOrderStatus.WaitingPayment:
                 break;
 
             default:
-                return new Response<Order?>(order, 400, "Pedido com situação inválida!");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "Pedido com situação inválida!");
         }
 
         order.Status = EOrderStatus.Canceled;
@@ -57,10 +58,10 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
         }
         catch
         {
-            return new Response<Order?>(order, 500, "Não foi possível atualizar seu pedido");
+            return new Response<Order?>(order, HttpStatusCode.InternalServerError, "Não foi possível atualizar seu pedido");
         }
 
-        return new Response<Order?>(order, 200, $"Pedido {order.Number} atualizado!");
+        return new Response<Order?>(order, HttpStatusCode.OK, $"Pedido {order.Number} atualizado!");
     }
 
     public async Task<Response<Order?>> CreateAsync(CreateOrderRequest request)
@@ -74,13 +75,13 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
                 .FirstOrDefaultAsync(x => x.Id == request.ProductId && x.IsActive == true);
 
             if (product is null)
-                return new Response<Order?>(null, 404, "Produto não encontrado ou inativo");
+                return new Response<Order?>(null, HttpStatusCode.NotFound, "Produto não encontrado ou inativo");
 
             context.Attach(product);
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Falha ao verificar produto");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Falha ao verificar produto");
         }
 
         Voucher? voucher = null;
@@ -94,10 +95,10 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
                     .FirstOrDefaultAsync(x => x.Id == request.VoucherId && x.IsActive == true);
 
                 if (voucher is null)
-                    return new Response<Order?>(null, 404, "Voucher não encontrado ou inativo");
+                    return new Response<Order?>(null, HttpStatusCode.NotFound, "Voucher não encontrado ou inativo");
 
                 if (voucher.IsActive == false)
-                    return new Response<Order?>(null, 404, "Este voucher já foi utilizado");
+                    return new Response<Order?>(null, HttpStatusCode.NotFound, "Este voucher já foi utilizado");
 
                 voucher.IsActive = false;
 
@@ -107,7 +108,7 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Falha ao verificar voucher");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Falha ao verificar voucher");
         }
 
         var order = new Order
@@ -126,10 +127,10 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Não foi possível registrar seu pedido");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Não foi possível registrar seu pedido");
         }
 
-        return new Response<Order?>(order, 201, $"Pedido {order.Number} cadastrado com sucesso!");
+        return new Response<Order?>(order, HttpStatusCode.Created, $"Pedido {order.Number} cadastrado com sucesso!");
     }
 
     public async Task<Response<Order?>> PayAsync(PayOrderRequest request)
@@ -144,29 +145,29 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
                 .FirstOrDefaultAsync(x => x.Number == request.OrderNumber && x.UserId == request.UserId);
 
             if (order is null)
-                return new Response<Order?>(null, 404, $"Pedido {request.OrderNumber} não encontrado");
+                return new Response<Order?>(null, HttpStatusCode.NotFound, $"Pedido {request.OrderNumber} não encontrado");
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Falha ao consultar pedido");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Falha ao consultar pedido");
         }
 
         switch (order.Status)
         {
             case EOrderStatus.Canceled:
-                return new Response<Order?>(order, 400, "O pedido está cancelado!");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "O pedido está cancelado!");
 
             case EOrderStatus.Paid:
-                return new Response<Order?>(order, 400, "O pedido já foi pago");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "O pedido já foi pago");
 
             case EOrderStatus.Refunded:
-                return new Response<Order?>(order, 400, "Um pedido reembolsado não pode ser cancelado");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "Um pedido reembolsado não pode ser cancelado");
 
             case EOrderStatus.WaitingPayment:
                 break;
 
             default:
-                return new Response<Order?>(order, 400, "Situação do pedido inválida");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "Situação do pedido inválida");
         }
 
         try
@@ -178,22 +179,22 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
             var result = await stripeHandler.GetTransactionsByOrderNumberAsync(getTransactionByOrderNumberRequest);
 
             if (result.IsSuccess == false)
-                return new Response<Order?>(null, 500, "Não foi possível localizar o pagamento do seu pedido!");
+                return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Não foi possível localizar o pagamento do seu pedido!");
 
             if (result.Data is null)
-                return new Response<Order?>(null, 500, "Não foi possível localizar o pagamento do seu pedido!");
+                return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Não foi possível localizar o pagamento do seu pedido!");
 
             if (result.Data.Any(item => item.Refunded))
-                return new Response<Order?>(null, 500, "Este pedido já foi estornado e não pode ser pago!");
+                return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Este pedido já foi estornado e não pode ser pago!");
 
             if (!result.Data.Any(item => item.Paid))
-                return new Response<Order?>(null, 500, "Este pedido ainda não foi pago!");
+                return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Este pedido ainda não foi pago!");
 
             request.ExternalReference = result.Data[0].Id;
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Não foi possível localizar o pagamento do seu pedido!");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Não foi possível localizar o pagamento do seu pedido!");
         }
 
         order.Status = EOrderStatus.Paid;
@@ -207,10 +208,10 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
         }
         catch
         {
-            return new Response<Order?>(order, 500, "Não foi possível realizar o pagamento do seu pedido!");
+            return new Response<Order?>(order, HttpStatusCode.InternalServerError, "Não foi possível realizar o pagamento do seu pedido!");
         }
 
-        return new Response<Order?>(order, 200, $"Pedido {order.Number} pago com sucesso!");
+        return new Response<Order?>(order, HttpStatusCode.OK, $"Pedido {order.Number} pago com sucesso!");
     }
 
     public async Task<Response<Order?>> RefundAsync(RefundOrderRequest request)
@@ -224,29 +225,29 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             if (order is null)
-                return new Response<Order?>(null, 404, "Pedido não encontrado");
+                return new Response<Order?>(null, HttpStatusCode.NotFound, "Pedido não encontrado");
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Falha ao consultar seu pedido");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Falha ao consultar seu pedido");
         }
 
         switch (order.Status)
         {
             case EOrderStatus.Canceled:
-                return new Response<Order?>(order, 400, "O pedido está cancelado!");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "O pedido está cancelado!");
 
             case EOrderStatus.WaitingPayment:
-                return new Response<Order?>(order, 400, "O pedido ainda não foi pago");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "O pedido ainda não foi pago");
 
             case EOrderStatus.Refunded:
-                return new Response<Order?>(order, 400, "O pedido já foi reembolsado");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "O pedido já foi reembolsado");
 
             case EOrderStatus.Paid:
                 break;
 
             default:
-                return new Response<Order?>(order, 400, "Situação do pedido inválida");
+                return new Response<Order?>(order, HttpStatusCode.BadRequest, "Situação do pedido inválida");
         }
 
         order.Status = EOrderStatus.Refunded;
@@ -259,10 +260,10 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
         }
         catch
         {
-            return new Response<Order?>(order, 500, "Não foi possível reembolsar seu pedido");
+            return new Response<Order?>(order, HttpStatusCode.InternalServerError, "Não foi possível reembolsar seu pedido");
         }
 
-        return new Response<Order?>(order, 200, $"Pedido {order.Number} estornado com sucesso!");
+        return new Response<Order?>(order, HttpStatusCode.OK, $"Pedido {order.Number} estornado com sucesso!");
     }
 
     public async Task<PagedResponse<List<Order>?>> GetAllAsync(GetAllOrdersRequest request)
@@ -292,7 +293,7 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
         }
         catch
         {
-            return new PagedResponse<List<Order>?>(null, 500, "Não foi possível consultar os pedidos");
+            return new PagedResponse<List<Order>?>(null, HttpStatusCode.InternalServerError, "Não foi possível consultar os pedidos");
         }
     }
 
@@ -308,12 +309,12 @@ public class OrderHandler(AppDbContext context, IStripeHandler stripeHandler) : 
                 .FirstOrDefaultAsync(x => x.Number == request.Number && x.UserId == request.UserId);
 
             return order is null
-                ? new Response<Order?>(null, 404, "Pedido não encontrado")
+                ? new Response<Order?>(null, HttpStatusCode.NotFound, "Pedido não encontrado")
                 : new Response<Order?>(order);
         }
         catch
         {
-            return new Response<Order?>(null, 500, "Não foi possível recuperar o pedido");
+            return new Response<Order?>(null, HttpStatusCode.InternalServerError, "Não foi possível recuperar o pedido");
         }
     }
 }

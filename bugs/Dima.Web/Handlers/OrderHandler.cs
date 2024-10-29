@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using Dima.Core.Handlers;
 using Dima.Core.Models;
 using Dima.Core.Requests.Orders;
@@ -14,35 +15,35 @@ public class OrderHandler(IHttpClientFactory httpClientFactory) : IOrderHandler
     {
         var result = await _client.PostAsJsonAsync($"v1/orders/{request.Id}/cancel", request);
         return await Response<Order?>.FromHttpResponse(result)
-               ?? new Response<Order?>(null, 400, "Falha ao cancelar pedido");
+               ?? new Response<Order?>(null, HttpStatusCode.BadRequest, "Falha ao cancelar pedido");
     }
 
     public async Task<Response<Order?>> CreateAsync(CreateOrderRequest request)
     {
         var result = await _client.PostAsJsonAsync("v1/orders", request);
         return await Response<Order?>.FromHttpResponse(result)
-               ?? new Response<Order?>(null, 400, "Falha ao criar a pedido");
+               ?? new Response<Order?>(null, HttpStatusCode.BadRequest, "Falha ao criar a pedido");
     }
 
     public async Task<Response<Order?>> PayAsync(PayOrderRequest request)
     {
         var result = await _client.PostAsJsonAsync($"v1/orders/{request.OrderNumber}/pay", request);
         return await Response<Order?>.FromHttpResponse(result)
-               ?? new Response<Order?>(null, 400, "Falha ao pagar pedido");
+               ?? new Response<Order?>(null, HttpStatusCode.BadRequest, "Falha ao pagar pedido");
     }
 
     public async Task<Response<Order?>> RefundAsync(RefundOrderRequest request)
     {
         var result = await _client.PostAsJsonAsync($"v1/orders/{request.Id}/refund", request);
         return await Response<Order?>.FromHttpResponse(result)
-               ?? new Response<Order?>(null, 400, "Falha ao pagar pedido");
+               ?? new Response<Order?>(null, HttpStatusCode.BadRequest, "Falha ao pagar pedido");
     }
 
     public async Task<PagedResponse<List<Order>?>> GetAllAsync(GetAllOrdersRequest request)
         => await _client.GetFromJsonAsync<PagedResponse<List<Order>?>>("v1/orders")
-           ?? new PagedResponse<List<Order>?>(null, 400, "Não foi possível obter os pedidos");
+           ?? new PagedResponse<List<Order>?>(null, HttpStatusCode.BadRequest, "Não foi possível obter os pedidos");
 
     public async Task<Response<Order?>> GetByNumberAsync(GetOrderByNumberRequest request)
         => await _client.GetFromJsonAsync<Response<Order?>>($"v1/orders/{request.Number}")
-           ?? new Response<Order?>(null, 400, "Não foi possível obter o pedido");
+           ?? new Response<Order?>(null, HttpStatusCode.BadRequest, "Não foi possível obter o pedido");
 }

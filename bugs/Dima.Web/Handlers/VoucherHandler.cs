@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Dima.Core.Handlers;
 using Dima.Core.Models;
@@ -12,5 +13,5 @@ public class VoucherHandler(IHttpClientFactory httpClientFactory) : IVoucherHand
 
     public async Task<Response<Voucher?>> GetByNumberAsync(GetVoucherByNumberRequest request)
         => await _client.GetFromJsonAsync<Response<Voucher?>>($"v1/vouchers/{request.Number}")
-           ?? new Response<Voucher?>(null, 400, "Não foi possível obter o voucher");
+           ?? new Response<Voucher?>(null, HttpStatusCode.BadRequest, "Não foi possível obter o voucher");
 }

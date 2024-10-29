@@ -5,6 +5,7 @@ using Dima.Core.Models.Reports;
 using Dima.Core.Requests.Reports;
 using Dima.Core.Responses;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Dima.Api.Handlers;
 
@@ -28,7 +29,7 @@ public class ReportHandler(AppDbContext context) : IReportHandler
         }
         catch
         {
-            return new Response<List<IncomesAndExpenses>?>(null, 500, "Não foi possível obter as entradas e saídas");
+            return new Response<List<IncomesAndExpenses>?>(null, HttpStatusCode.InternalServerError, "Não foi possível obter as entradas e saídas");
         }
     }
 
@@ -50,7 +51,7 @@ public class ReportHandler(AppDbContext context) : IReportHandler
         }
         catch
         {
-            return new Response<List<IncomesByCategory>?>(null, 500,
+            return new Response<List<IncomesByCategory>?>(null, HttpStatusCode.InternalServerError,
                 "Não foi possível obter as entradas por categoria");
         }
     }
@@ -73,7 +74,7 @@ public class ReportHandler(AppDbContext context) : IReportHandler
         }
         catch
         {
-            return new Response<List<ExpensesByCategory>?>(null, 500,
+            return new Response<List<ExpensesByCategory>?>(null, HttpStatusCode.InternalServerError,
                 "Não foi possível obter as entradas por categoria");
         }
     }
@@ -105,7 +106,7 @@ public class ReportHandler(AppDbContext context) : IReportHandler
         }
         catch
         {
-            return new Response<FinancialSummary?>(null, 500,
+            return new Response<FinancialSummary?>(null, HttpStatusCode.InternalServerError,
                 "Não foi possível obter o resultado financeiro");
         }
     }

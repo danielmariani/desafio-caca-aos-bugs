@@ -15,11 +15,13 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
         try
         {
             // Fast fail validation
+            request.Title = request.Title.Trim();
+            request.Description = request.Description.Trim();
             var existsInDb = await context.Categories
                 .AsNoTracking()
                 .AnyAsync(c => c.Title == request.Title);
             if (existsInDb)
-                return new Response<Category?>(null, (int)HttpStatusCode.UnprocessableEntity, 
+                return new Response<Category?>(null, HttpStatusCode.UnprocessableEntity, 
                     $"A categoria '{request.Title}' já existe");
 
             var category = new Category
@@ -32,11 +34,11 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
             await context.Categories.AddAsync(category);
             await context.SaveChangesAsync();
 
-            return new Response<Category?>(category, 201, "Categoria criada com sucesso!");
+            return new Response<Category?>(category, HttpStatusCode.Created, "Categoria criada com sucesso!");
         }
         catch
         {
-            return new Response<Category?>(null, 500, "Não foi possível criar a categoria");
+            return new Response<Category?>(null, HttpStatusCode.InternalServerError, "Não foi possível criar a categoria");
         }
     }
 
@@ -49,7 +51,7 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             if (category is null)
-                return new Response<Category?>(null, 404, "Categoria não encontrada");
+                return new Response<Category?>(null, HttpStatusCode.NotFound, "Categoria não encontrada");
 
             category.Title = request.Title;
             category.Description = request.Description;
@@ -61,7 +63,7 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
         }
         catch
         {
-            return new Response<Category?>(null, 500, "Não foi possível alterar a categoria");
+            return new Response<Category?>(null, HttpStatusCode.InternalServerError, "Não foi possível alterar a categoria");
         }
     }
 
@@ -74,7 +76,7 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             if (category is null)
-                return new Response<Category?>(null, 404, "Categoria não encontrada");
+                return new Response<Category?>(null, HttpStatusCode.NotFound, "Categoria não encontrada");
 
             context.Categories.Remove(category);
             await context.SaveChangesAsync();
@@ -83,7 +85,7 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
         }
         catch
         {
-            return new Response<Category?>(null, 500, "Não foi possível excluir a categoria");
+            return new Response<Category?>(null, HttpStatusCode.InternalServerError, "Não foi possível excluir a categoria");
         }
     }
 
@@ -97,12 +99,12 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             return category is null
-                ? new Response<Category?>(null, 404, "Categoria não encontrada")
+                ? new Response<Category?>(null, HttpStatusCode.NotFound, "Categoria não encontrada")
                 : new Response<Category?>(category);
         }
         catch
         {
-            return new Response<Category?>(null, 500, "Não foi possível recuperar a categoria");
+            return new Response<Category?>(null, HttpStatusCode.InternalServerError, "Não foi possível recuperar a categoria");
         }
     }
 
@@ -131,7 +133,7 @@ public class CategoryHandler(AppDbContext context) : ICategoryHandler
         }
         catch
         {
-            return new PagedResponse<List<Category>>(null, 500, "Não foi possível consultar as categorias");
+            return new PagedResponse<List<Category>>(null, HttpStatusCode.InternalServerError, "Não foi possível consultar as categorias");
         }
     }
 }

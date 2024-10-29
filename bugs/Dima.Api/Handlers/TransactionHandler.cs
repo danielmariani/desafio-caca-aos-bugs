@@ -7,6 +7,7 @@ using Dima.Core.Requests.Transactions;
 using Dima.Core.Responses;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Dima.Api.Handlers;
 
@@ -33,11 +34,11 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
             await context.Transactions.AddAsync(transaction);
             await context.SaveChangesAsync();
 
-            return new Response<Transaction?>(transaction, 201, "Transação criada com sucesso!");
+            return new Response<Transaction?>(transaction, HttpStatusCode.Created, "Transação criada com sucesso!");
         }
         catch
         {
-            return new Response<Transaction?>(null, 500, "Não foi possível criar sua transação");
+            return new Response<Transaction?>(null, HttpStatusCode.InternalServerError, "Não foi possível criar sua transação");
         }
     }
 
@@ -50,7 +51,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             if (transaction is null)
-                return new Response<Transaction?>(null, 404, "Transação não encontrada");
+                return new Response<Transaction?>(null, HttpStatusCode.NotFound, "Transação não encontrada");
 
             transaction.Title = request.Title;
             transaction.PaidOrReceivedAt = request.PaidOrReceivedAt;
@@ -65,7 +66,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         }
         catch
         {
-            return new Response<Transaction?>(null, 500, "Não foi possível alterar a transação");
+            return new Response<Transaction?>(null, HttpStatusCode.InternalServerError, "Não foi possível alterar a transação");
         }
     }
 
@@ -78,7 +79,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             if (transaction is null)
-                return new Response<Transaction?>(null, 404, "Transação não encontrada");
+                return new Response<Transaction?>(null, HttpStatusCode.NotFound, "Transação não encontrada");
 
             context.Transactions.Remove(transaction);
             await context.SaveChangesAsync();
@@ -87,7 +88,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         }
         catch
         {
-            return new Response<Transaction?>(null, 500, "Não foi possível recuperar sua transação");
+            return new Response<Transaction?>(null, HttpStatusCode.InternalServerError, "Não foi possível recuperar sua transação");
         }
     }
 
@@ -100,12 +101,12 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
                 .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
 
             return transaction is null
-                ? new Response<Transaction?>(null, 404, "Transação não encontrada")
+                ? new Response<Transaction?>(null, HttpStatusCode.NotFound, "Transação não encontrada")
                 : new Response<Transaction?>(transaction);
         }
         catch
         {
-            return new Response<Transaction?>(null, 500, "Não foi possível recuperar sua transação");
+            return new Response<Transaction?>(null, HttpStatusCode.InternalServerError, "Não foi possível recuperar sua transação");
         }
     }
 
@@ -118,7 +119,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         }
         catch
         {
-            return new PagedResponse<List<Transaction>?>(null, 500,
+            return new PagedResponse<List<Transaction>?>(null, HttpStatusCode.InternalServerError,
                 "Não foi possível determinar a data de início ou término");
         }
 
@@ -148,7 +149,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         }
         catch
         {
-            return new PagedResponse<List<Transaction>?>(null, 500, "Não foi possível obter as transações");
+            return new PagedResponse<List<Transaction>?>(null, HttpStatusCode.InternalServerError, "Não foi possível obter as transações");
         }
     }
 }

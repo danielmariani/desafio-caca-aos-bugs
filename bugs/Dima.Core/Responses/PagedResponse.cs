@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json.Serialization;
 
 namespace Dima.Core.Responses;
@@ -18,9 +19,10 @@ public class PagedResponse<TData> : Response<TData>
         PageSize = pageSize;
     }
 
+
     public PagedResponse(
         TData? data,
-        int code = Configuration.DefaultStatusCode,
+        HttpStatusCode code = HttpStatusCode.OK,
         string? message = null)
         : base(data, code, message)
     {

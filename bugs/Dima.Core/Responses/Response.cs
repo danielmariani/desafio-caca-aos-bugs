@@ -21,17 +21,17 @@ public class Response<TData>
     {
         var responseContent = await httpMessage.Content.ReadFromJsonAsync<Response<TData?>>();
         return responseContent == null ? null
-            : new Response<TData?>(responseContent.Data, (int)httpMessage.StatusCode, responseContent.Message);
+            : new Response<TData?>(responseContent.Data, httpMessage.StatusCode, responseContent.Message);
     }
 
     public Response(
         TData? data,
-        int code = Configuration.DefaultStatusCode,
+        HttpStatusCode code = HttpStatusCode.OK,
         string? message = null)
     {
         Data = data;
         Message = message;
-        _code = code;
+        _code = (int)code;
     }
 
     public TData? Data { get; set; }

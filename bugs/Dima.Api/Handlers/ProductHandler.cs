@@ -4,6 +4,7 @@ using Dima.Core.Models;
 using Dima.Core.Requests.Orders;
 using Dima.Core.Responses;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Dima.Api.Handlers;
 
@@ -34,7 +35,7 @@ public class ProductHandler(AppDbContext context) : IProductHandler
         }
         catch
         {
-            return new PagedResponse<List<Product>>(null, 500, "Não foi possível consultar os produtos");
+            return new PagedResponse<List<Product>>(null, HttpStatusCode.InternalServerError, "Não foi possível consultar os produtos");
         }
     }
 
@@ -48,12 +49,12 @@ public class ProductHandler(AppDbContext context) : IProductHandler
                 .FirstOrDefaultAsync(x => x.Slug == request.Slug && x.IsActive == true);
 
             return product is null
-                ? new Response<Product?>(null, 404, "Produto não encontrado")
+                ? new Response<Product?>(null, HttpStatusCode.NotFound, "Produto não encontrado")
                 : new Response<Product?>(product);
         }
         catch
         {
-            return new Response<Product?>(null, 500, "Não foi possível recuperar o produto");
+            return new Response<Product?>(null, HttpStatusCode.InternalServerError, "Não foi possível recuperar o produto");
         }
     }
 }
