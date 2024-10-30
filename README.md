@@ -12,6 +12,9 @@ Depuração e solução de bugs, pensamento crítico e analítico, segurança e 
 
 ### 👻 Caçadores de Bugs
 * [Daniel Mariani](https://github.com/danielmariani/desafio-caca-aos-bugs)
+* Marlitos
+* Daniel Lima
+* Alex Marafon
 
 ## ⚙️ Tecnologias
 * C# 12
@@ -37,7 +40,10 @@ Depuração e solução de bugs, pensamento crítico e analítico, segurança e 
   \Dima.Api\Data\Views\vwGetIncomesAndExpenses.sql;
   \Dima.Api\Data\Views\vwGetIncomesByCategory.sql.
 * Execute a aplicação a partir de sua IDE preferida.
-
+  
+### Teste (Solution Balta.sln)
+* Execute a aplicação a partir de sua IDE preferida.
+* Execute os testes automatizados.
 
 
 # 💜 Participe
