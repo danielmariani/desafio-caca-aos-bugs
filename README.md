@@ -8,10 +8,11 @@ Depuração e solução de bugs, pensamento crítico e analítico, segurança e 
 
 ## Participantes
 ### 🚀 Líder Técnico
-[Daniel Mariani](https://github.com/danielmariani/desafio-caca-aos-bugs)
+[M1nh0k](https://github.com/danielmariani/desafio-caca-aos-bugs)
+Marlitos
 
 ### 👻 Caçadores de Bugs
-* [Daniel Mariani](https://github.com/danielmariani/desafio-caca-aos-bugs)
+* [M1nh0k](https://github.com/danielmariani/desafio-caca-aos-bugs)
 * Marlitos
 * Daniel Lima
 * Alex Marafon
